@@ -1,0 +1,24 @@
+name: gsd_utilities_example
+description: Example app demonstrating GSD Utilities features
+version: 1.0.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.5.3
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  gsd_utilities:
+    path: ../
+  file_picker: ^10.2.1
+  gsd_restapi: ^0.1.25
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true

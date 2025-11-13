@@ -1,0 +1,37 @@
+name: gsd_utilities
+description: "Flutter utilities for config management, local storage, and file uploads to DOCUframe."
+version: 0.0.25
+repository: https://github.com/GSD-Software-mbH/GSD-Utilities
+homepage: https://gsd-software.com
+documentation: https://github.com/GSD-Software-mbH/GSD-Utilities
+
+environment:
+  sdk: ^3.5.3
+  flutter: ">=1.17.0"
+
+dependencies:
+  event: ^3.1.0
+  flutter:
+    sdk: flutter
+  gsd_encryption: ^0.1.17
+  gsd_restapi: ^0.1.42
+  flutter_secure_storage: ^9.2.4
+  web: ^1.1.1
+  image: ^4.5.4
+  path: ^1.9.1
+  uuid: ^4.5.1
+  provider: ^6.1.2
+  
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+
+topics:
+  - utilities
+  - managers
+  - login
+  - config
+  - upload
