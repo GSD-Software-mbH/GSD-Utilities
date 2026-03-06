@@ -1,0 +1,56 @@
+trigger: none
+pr: none
+
+resources:
+  pipelines:
+    - pipeline: buildUpstream
+      source: Build
+      trigger:
+        branches:
+          include:
+            - main
+
+pool:
+  name: default
+  demands: Pub
+
+stages:
+  - stage: PublishPackage
+    displayName: Publish to pub.dev
+    jobs:
+      - job: PublishJob
+        displayName: Publish Package
+        steps:
+          - checkout: self
+            persistCredentials: true
+            fetchDepth: 0
+
+          - task: CmdLine@2
+            displayName: "Checkout latest main"
+            inputs:
+              script: |
+                git checkout main
+                git pull origin main
+                
+                for /f %%i in ('git tag --sort=-v:refname') do (set "PUBLISH_VERSION=%%i" & goto :version_found)
+                :version_found
+                echo Publishing version: %PUBLISH_VERSION%
+                echo ##vso[build.updatebuildnumber]%PUBLISH_VERSION%
+
+          - task: CmdLine@2
+            displayName: "Clean project"
+            inputs:
+              script: "flutter clean"
+              workingDirectory: "$(Build.SourcesDirectory)"
+
+          - task: CmdLine@2
+            displayName: "Resolve dependencies"
+            inputs:
+              script: "flutter pub get"
+              workingDirectory: "$(Build.SourcesDirectory)"
+
+          - task: CmdLine@2
+            displayName: "Publish to pub.dev"
+            inputs:
+              script: |
+                flutter pub publish --force

@@ -1,0 +1,67 @@
+trigger: none
+pr: none
+
+resources:
+  pipelines:
+    - pipeline: buildUpstream
+      source: Build
+      trigger:
+        branches:
+          include:
+            - main
+
+pool:
+  name: default
+  demands: Web
+
+stages:
+  - stage: SyncGitHub
+    displayName: Sync to GitHub
+    jobs:
+      - job: SyncJob
+        displayName: Sync to GitHub
+        steps:
+          - checkout: self
+            persistCredentials: true
+            fetchDepth: 0
+          - task: CmdLine@2
+            displayName: "Sync Current Main State to GitHub (No History)"
+            env:
+              GITHUB_TOKEN: $(GITHUB_TOKEN)
+            inputs:
+              script: |
+                echo Checking out latest main...
+                git checkout -B main origin/main
+                
+                for /f %%i in ('git tag --sort=-v:refname') do (set "SYNC_VERSION=%%i" & goto :version_found)
+                :version_found
+                echo Using version: %SYNC_VERSION%
+                echo ##vso[build.updatebuildnumber]%SYNC_VERSION%
+
+                echo Setting up Git configuration...
+                git config --global user.email "info@gsd-software.com"
+                git config --global user.name "GSD Software CI/CD"
+                git config --global push.default simple
+
+                echo Removing existing GitHub remote and adding fresh one...
+                git remote remove github 2>nul
+                git remote add github https://$(GITHUB_TOKEN)@github.com/GSD-Software-mbH/GSD-Utilities.git
+
+                echo Cleaning up any existing temp branches...
+                git branch -D temp-sync-branch 2>nul
+
+                echo Creating fresh orphan branch with current main state...
+                git checkout --orphan temp-sync-branch
+                git add -A
+                git commit -m "Sync from Azure DevOps main - Version %SYNC_VERSION%"
+
+                echo Force pushing to GitHub main (replacing all history)...
+                git push github temp-sync-branch:main --force
+
+                echo Successfully synchronized Version %SYNC_VERSION% to GitHub main
+
+                echo Cleaning up...
+                git checkout -B main origin/main
+                git branch -D temp-sync-branch 2>nul
+                git remote remove github 2>nul
+                echo Cleanup complete
